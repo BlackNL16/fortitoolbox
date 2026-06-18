@@ -183,7 +183,7 @@ domain: example-corp.com
 round-trip min/avg/max = 17.9/18.1/18.4 ms
 """,
     "diagnose sys top 1 1": "Run Time: 41 days, 6 hours\n0 wad 1234 R 2.1 3.0\n",
-    # NOTE: command + output format ASSUMED -- pending Héctor confirmation.
+    # NOTE: command and output format are assumed; validate on the target FortiOS.
     "diagnose sys sdwan service4": """Service(1): Address Mode(IPV4) flags=0x200 Gen(1), TOS(0x0/0x0), Protocol(0: 1->65535), Mode(sla), sla-compare-order
   Members(2):
     1: Seq_num(1 port1), alive, sla(0x1), gid(0), cfg_order(0), cost(0), selected

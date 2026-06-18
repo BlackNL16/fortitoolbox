@@ -1,62 +1,47 @@
-# FortiToolbox — Guía de uso
+# FortiToolbox — User Guide
 
-Pensada para el operador. Cada sección, lo justo.
+Written for operators: each section contains only what you need.
 
-## Conexión
-- **Connect** abre el diálogo. **Demo mode** = dispositivo simulado (para sala/
-  pruebas). Real = host + usuario (read-only) + password; **Enter conecta**.
-- **Account has diagnose**: actívalo si tu cuenta tiene `system-diagnostics enable`
-  (salta el probe). Si no, los checks `diagnose` salen SKIPPED — puedes forzarlos
-  pulsando el chip `diagnose: OFF` de la barra superior.
-- **VDOMs**: si el equipo es multi-VDOM, aparece el desplegable; eliges el VDOM
-  activo (default `root`). Los checks per-VDOM corren en ese; los global, en global.
-- La barra superior muestra modelo / versión / **serial enmascarado** / hostname.
+## Connection
 
-## Tablero y ejecución
-- **Quick health** (kit rápido) · **Full sweep** (todo) · **Run all in <pestaña>** ·
-  o el botón **▶** de cada check.
-- Contadores arriba (FAIL/WARN/PASS/INFO): **clic = filtrar** las cards a ese estado
-  en todas las pestañas; "show all" limpia.
-- Cada card: lámpara de estado, headline (la conclusión), métricas (el número que
-  importa) y "Raw output" plegable.
+- **Connect** opens the connection dialog. **Demo mode** uses a simulated device for demos and testing. For a real device, enter the host, read-only username, and password; press **Enter** to connect.
+- Enable **Account has diagnose** when the account profile includes `system-diagnostics enable`; this skips the capability probe. Otherwise, checks that use `diagnose` are marked SKIPPED. You can override this by clicking the `diagnose: OFF` chip in the top bar.
+- On multi-VDOM devices, use the VDOM selector to choose the active VDOM (default: `root`). Per-VDOM checks run there; global checks run in the global context.
+- The top bar shows the model, version, **masked serial number**, and hostname.
+
+## Dashboard and checks
+
+- Run **Quick health**, **Full sweep**, **Run all in <tab>**, or the **▶** button on an individual check.
+- Click a FAIL/WARN/PASS/INFO counter to filter cards across all tabs. Click **Show all** to clear the filter.
+- Each card contains a status indicator, a conclusion, the metric that matters, and collapsible raw output.
 
 ## Copy for LLM
-Botón **Copy for LLM**: ofusca todo el output (serials/IPs/MACs/hosts/emails →
-tokens reversibles; secretos fuera) y lo copia listo para pegar en un LLM. Toggle
-**mask** para mostrar los campos de secreto como `<SECRET_n>` (valor descartado).
-Si el leak-check no está limpio, **bloquea la copia**.
 
-## Report (PDF)
-Botón **Report**: genera un PDF con firma del dispositivo (serial enmascarado),
-barra de veredictos y todos los checks por módulo. Para adjuntar al ticket o
-entregar al cliente.
+Click **Copy for LLM** to obfuscate all output and copy it in a form ready to paste into an LLM. Serial numbers, IP addresses, MAC addresses, hostnames, and email addresses become reversible tokens; secrets are removed. Enable **mask** to show discarded secret fields as `<SECRET_n>`. Copying is blocked if the leak check fails.
 
-## Consola SSH
-Botón **Console** (panel derecho): comandos en vivo contra el equipo. Output crudo
-(banner de aviso, **sin ofuscar**). Botones: Send · Ctrl-C · Kill debug · Clear ·
-**Obfuscate & copy** (pasa la selección por el ofuscador). Canal dedicado: no
-interfiere con los checks.
+## PDF report
+
+Click **Report** to generate a PDF containing the masked device identity, verdict summary, and all checks grouped by module. It is suitable for attaching to a ticket or delivering to a customer.
+
+## SSH console
+
+Click **Console** to open the right-hand panel and run live commands against the device. Console output is raw and **not obfuscated**, as the warning banner explains. Available actions are Send, Ctrl-C, Kill debug, Clear, and **Obfuscate & copy**. The console uses a dedicated channel and does not interfere with checks.
 
 ## Advanced — Debug Flow
-1. Escribe el objetivo: IP, puerto y/o proto en una línea (`tcp,443,1.1.1.1`); sin
-   interfaz = se usa el contexto del VDOM. Nº de paquetes (default 10).
-2. **Run flow**: captura en vivo con contador y **Stop** (limpia el debug siempre).
-3. Resultado: **conclusiones** arriba (p.ej. "RPF drop: ruta de vuelta…"), **pipeline**
-   IN→ROUTE→POLICY→NAT→UTM→OUT (solo lo que ocurre; DROP en rojo), **stepper** por
-   paquete, y Raw por paquete.
-4. Botones: **Live session** (la sesión viva por tupla: NAT/offload/bytes), **Sniff
-   this flow** (pre-rellena el sniffer), **Copy for LLM**.
+
+1. Enter a target IP address, port, and/or protocol on one line, such as `tcp,443,1.1.1.1`. Without an interface, the active VDOM context is used. The default packet count is 10.
+2. Click **Run flow** to start a live capture with a counter and **Stop** button. Debug state is always cleaned up.
+3. Results show conclusions first, such as an RPF drop caused by a missing return route. The IN→ROUTE→POLICY→NAT→UTM→OUT pipeline shows only stages that occurred, with drops highlighted in red. Per-packet steps and raw output are also available.
+4. Use **Live session** to inspect NAT, offload, and byte counters for the tuple; **Sniff this flow** to prefill the packet sniffer; or **Copy for LLM** to export safely.
 
 ## Advanced — Packet Sniffer
-1. Filtro inteligente: `wan1 tcp 443` o `tcp,443,8.8.8.8` (sin interfaz = any).
-   Max packets (default 5000, editable).
-2. **Capture**: en vivo con Stop. Resumen por paquete (hora/interfaz/origen→destino/
-   info), desplegable por paquete con su hex.
-3. **Download .pcap** → ábrelo en Wireshark.
 
-## Advanced — Authentication test
-1. **Load servers** (se autocargan al conectar) → elige protocolo y servidor.
-   RADIUS muestra el selector de **esquema** (pap/chap/mschap/mschap2).
-2. Usuario + password (enmascarada, no se guarda).
-3. **Test auth**: estado (OK/FAIL) + **grupos** devueltos + conclusiones. Toggle
-   **fnbamd verbose** para la negociación detallada. SAML no es testeable por CLI.
+1. Enter a smart filter such as `wan1 tcp 443` or `tcp,443,8.8.8.8`. Without an interface, all interfaces are used. The default maximum is 5,000 packets and can be changed.
+2. Click **Capture** to start a live capture with a **Stop** button. Each packet is summarized by time, interface, source, destination, and protocol details; expand it to view hexadecimal data.
+3. Click **Download .pcap** and open the file in Wireshark.
+
+## Advanced — Authentication Test
+
+1. Click **Load servers** (also performed automatically after connecting), then choose a protocol and server. RADIUS adds a scheme selector for PAP, CHAP, MSCHAP, or MSCHAPv2.
+2. Enter a username and password. The password is masked and never stored.
+3. Click **Test auth** to see the result, returned groups, and conclusions. Enable **fnbamd verbose** for detailed negotiation output. SAML cannot be tested through the CLI.

@@ -21,7 +21,7 @@ vdom_list_cmd: "diagnose sys vd list"
 checks:
   # ---------------- System & Health ----------------
   - id: version_model
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: Version & hardware model
     cmds: ["get system status"]
@@ -29,7 +29,7 @@ checks:
     kits: [quick, full]
 
   - id: resources
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: Resources & conserve mode
     cmds: ["get system performance status"]
@@ -37,7 +37,7 @@ checks:
     kits: [quick, full]
 
   - id: fortiguard
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: FortiGuard connectivity & per-module licensing
     cmds: ["get system fortiguard", "diagnose autoupdate versions"]
@@ -45,7 +45,7 @@ checks:
     kits: [quick, full]
 
   - id: ha
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: HA sync & checksum
     cmds: ["get system ha status", "diagnose sys ha checksum cluster", "diagnose sys ha history read"]
@@ -54,7 +54,7 @@ checks:
     kits: [quick, full]
 
   - id: ntp
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: Time synchronization (NTP)
     cmds: ["diagnose sys ntp status"]
@@ -63,7 +63,7 @@ checks:
     kits: [quick, full]
 
   - id: crashlog
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: Crash log review
     cmds: ["diagnose debug crashlog read"]
@@ -72,7 +72,7 @@ checks:
     kits: [full]
 
   - id: config_error_log
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: System & Health
     title: Config error log
     cmds: ["diagnose debug config-error-log read"]
@@ -96,12 +96,12 @@ checks:
     title: Hardware / factory certificate
     cmds: ["diagnose hardware certificate"]
     privilege: sysdiag
-    verify: true   # syntax per Héctor; output format ASSUMED -> validate
+    verify: true   # output format assumed; validate against target FortiOS
     kits: [full]
 
   # ---------------- Network ----------------
   - id: interfaces
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: Network
     title: Interface link status (hardware NIC)
     cmds: ["get system interface physical"]
@@ -111,7 +111,7 @@ checks:
     kits: [quick, full]
 
   - id: routing
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Network
     title: Routing sanity (default route, blackhole, unresolved)
     cmds: ["get router info routing-table all"]
@@ -119,7 +119,7 @@ checks:
     kits: [quick, full]
 
   - id: dynamic_routing
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Network
     title: Dynamic routing adjacencies (BGP / OSPF)
     cmds: ["get router info bgp summary", "get router info ospf neighbor"]
@@ -193,7 +193,7 @@ checks:
     kits: [full]
 
   - id: sessions
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Network
     title: Session table
     cmds: ["diagnose sys session full-stat"]
@@ -202,7 +202,7 @@ checks:
 
   # ---------------- Security / Policy ----------------
   - id: policy_hitcount
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Security / Policy
     title: Dead policies (hit-count 0)
     cmds: ["diagnose firewall iprope show 100004 0"]
@@ -212,7 +212,7 @@ checks:
     kits: [quick, full]
 
   - id: webfilter_rating
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Security / Policy
     title: Web filter rating servers
     cmds: ["diagnose debug rating"]
@@ -221,7 +221,7 @@ checks:
 
   # ---------------- DNS & Resolution ----------------
   - id: dns
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: DNS & Resolution
     title: DNS config, server readiness & resolution
     cmds:
@@ -268,7 +268,7 @@ checks:
       - {cmd: "diagnose netlink interface list", optional: true}
     privilege: sysdiag
     verify: true
-    note: "Command returns 9004 on Héctor's MR -- syntax to be confirmed; optional so it never errors."
+    note: "Command returned 9004 on one tested maintenance release; confirm syntax on the target version. It is optional, so rejection does not fail the check."
     kits: [full]
 
   - id: arp
@@ -300,7 +300,7 @@ checks:
 
   # ---------------- Advanced (stateful / interactive / write) ----------------
   - id: debug_flow
-    scope: vdom   # global|vdom -- CONFIRM split with Héctor
+    scope: vdom   # global|vdom -- confirm scope split against target FortiOS
     module: Advanced
     title: Packet flow trace (diagnose debug flow)
     cmds: ["diagnose debug flow ..."]
@@ -310,7 +310,7 @@ checks:
     verify: true
 
   - id: sniffer
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: Advanced
     title: Packet capture -> Wireshark (.pcap)
     cmds: ["diagnose sniffer packet ..."]
@@ -320,7 +320,7 @@ checks:
     verify: true
 
   - id: auth_test
-    scope: global   # global|vdom -- CONFIRM split with Héctor
+    scope: global   # global|vdom -- confirm scope split against target FortiOS
     module: Advanced
     title: Authentication test (LDAP / RADIUS / TACACS+)
     cmds: ["diagnose test authserver ..."]

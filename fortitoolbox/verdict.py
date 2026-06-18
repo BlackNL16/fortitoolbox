@@ -1,6 +1,6 @@
 """Verdict model. Every check yields one Status plus a headline and metrics --
-the 'amplitud con criterio' principle: breadth of checks, each with a crisp
-PASS/WARN/FAIL and the single number that matters.
+the principle of purposeful breadth: many checks, each with a crisp PASS/WARN/FAIL
+and the single number that matters.
 """
 from __future__ import annotations
 
