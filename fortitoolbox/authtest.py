@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Dict, List
+from typing import List
 
 ENUM_CMDS = {"ldap": "get user ldap", "radius": "get user radius",
              "tacacs+": "get user tacacs+"}

@@ -5,7 +5,7 @@ Summary-grade: conclusions + the number that matters, no raw dumps.
 from __future__ import annotations
 
 import datetime as _dt
-from typing import List, Tuple
+from typing import List
 
 PAGE_W, PAGE_H = 595, 842
 LEFT = 48
@@ -144,7 +144,6 @@ class _Pdf:
         body = {}
         body[1] = "<</Type/Catalog/Pages 2 0 R>>"
         kids, oid = [], 5
-        page_ids = []
         for i in range(n):
             content_id, page_id = oid, oid + 1
             stream = "\n".join(self.pages[i])

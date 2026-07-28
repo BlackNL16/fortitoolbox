@@ -368,7 +368,7 @@ class MockConnector(Connector):
     def close(self) -> None:
         pass
 
-    def run(self, command: str, scope=None, vdom=None) -> str:
+    def run(self, command: str, scope=None, vdom=None, read_timeout=None) -> str:
         cmd = command.strip()
         if cmd.startswith("diagnose firewall iprope lookup"):
             return ("gnum=100004 policy match:\n"

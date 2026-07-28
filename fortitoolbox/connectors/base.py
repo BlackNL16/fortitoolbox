@@ -32,12 +32,14 @@ class Connector:
     def close(self) -> None: ...
 
     def run(self, command: str, scope: Optional[str] = None,
-            vdom: Optional[str] = None) -> str:
+            vdom: Optional[str] = None,
+            read_timeout: Optional[int] = None) -> str:
         """Run one read-grade command, return raw text output.
 
         scope: None | "global" | "vdom". On multi-VDOM devices the connector
         scopes the command (config global / config vdom + edit). Connectors
         that do not need scoping (mock, paste) ignore it.
+        read_timeout: optional command-specific timeout in seconds.
         """
         raise NotImplementedError
 

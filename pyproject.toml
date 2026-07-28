@@ -16,6 +16,9 @@ dependencies = [
     "PyYAML>=6.0",
 ]
 
+[project.optional-dependencies]
+dev = ["ruff>=0.15,<1"]
+
 [project.scripts]
 fortitoolbox = "fortitoolbox.__main__:serve"
 
@@ -24,3 +27,11 @@ packages = ["fortitoolbox", "fortitoolbox.connectors"]
 
 [tool.setuptools.package-data]
 fortitoolbox = ["catalog.yaml"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E702", "E741"]

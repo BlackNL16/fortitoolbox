@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Pattern, Tuple
+from typing import Dict, List, Pattern, Tuple
 
 # --- entity recognizers -----------------------------------------------------
 # Order matters: longer / more specific patterns first so they win the match.

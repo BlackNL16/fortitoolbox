@@ -652,7 +652,6 @@ def _vpn_ssl(meta, out, dev):
     raw = _first(out)
     r = CheckResult(meta["id"], meta["module"], meta["title"], raw=raw)
     users = re.findall(r"^\s*\d+\s+\S+\s+\S+\s+\d+\(\d+\)", raw, re.MULTILINE)
-    sec = re.search(r"SSL-VPN sessions:", raw)
     r.m("Login users", len(users))
     r.status = Status.INFO
     r.headline = (f"{len(users)} SSL-VPN user(s) connected" if users

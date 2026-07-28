@@ -5,7 +5,7 @@ Written for operators: each section contains only what you need.
 ## Connection
 
 - **Connect** opens the connection dialog. **Demo mode** uses a simulated device for demos and testing. For a real device, enter the host, read-only username, and password; press **Enter** to connect.
-- Enable **Account has diagnose** when the account profile includes `system-diagnostics enable`; this skips the capability probe. Otherwise, checks that use `diagnose` are marked SKIPPED. You can override this by clicking the `diagnose: OFF` chip in the top bar.
+- The app runs one bounded, read-only command to detect whether the account profile includes `system-diagnostics enable`. If diagnose access is unavailable, those checks are marked SKIPPED; you can override the result later by clicking the `diagnose: OFF` chip in the top bar.
 - On multi-VDOM devices, use the VDOM selector to choose the active VDOM (default: `root`). Per-VDOM checks run there; global checks run in the global context.
 - The top bar shows the model, version, **masked serial number**, and hostname.
 
@@ -42,6 +42,6 @@ Click **Console** to open the right-hand panel and run live commands against the
 
 ## Advanced — Authentication Test
 
-1. Click **Load servers** (also performed automatically after connecting), then choose a protocol and server. RADIUS adds a scheme selector for PAP, CHAP, MSCHAP, or MSCHAPv2.
+1. Click **Load servers**, then choose a protocol and server. RADIUS adds a scheme selector for PAP, CHAP, MSCHAP, or MSCHAPv2.
 2. Enter a username and password. The password is masked and never stored.
 3. Click **Test auth** to see the result, returned groups, and conclusions. Enable **fnbamd verbose** for detailed negotiation output. SAML cannot be tested through the CLI.

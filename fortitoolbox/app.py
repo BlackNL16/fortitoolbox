@@ -7,10 +7,11 @@ element is the live verdict board (pass/warn/fail tally + device identity strip)
 from __future__ import annotations
 
 import re
+import time
 
 from typing import Dict, List, Optional
 
-from nicegui import app, run, ui
+from nicegui import run, ui
 
 from .connectors.base import DeviceInfo
 from .connectors.mock import MockConnector
@@ -66,6 +67,7 @@ class State:
         self.secret_policy = "drop"   # drop | mask
         self.filter_status = None     # drill-down: show only this Status
         self.busy = False             # a run is in progress
+        self.connecting = False       # prevent duplicate SSH connection attempts
         self.console = None           # live SSH console session
         self.console_text = ""        # accumulated console output (for obfuscated copy)
         self.console_expert = False   # bypass the read-only denylist
@@ -563,7 +565,7 @@ def flow_panel():
                     .classes("text-xs").style(f"color:{MUTED}")
                 if S.flow_live_text.strip():
                     ui.code(S.flow_live_text[-1200:]).classes("w-full ftb-mono text-xs") \
-                        .style(f"max-height:160px;overflow:auto")
+                        .style("max-height:160px;overflow:auto")
             return
 
         res = S.flow_result
@@ -849,7 +851,12 @@ def _refresh_all():
 
 
 # ---- actions ---------------------------------------------------------------
-async def do_connect(host, user, pwd, use_mock, dialog, use_vdom_demo=False, force_diag=False):
+async def do_connect(host, user, pwd, use_mock, dialog, use_vdom_demo=False):
+    if S.connecting:
+        ui.notify("A connection attempt is already in progress", type="warning")
+        return
+    S.connecting = True
+    started = time.monotonic()
     n = ui.notification("Connecting…", spinner=True, timeout=None)
     try:
         if use_mock:
@@ -860,18 +867,21 @@ async def do_connect(host, user, pwd, use_mock, dialog, use_vdom_demo=False, for
             mport = re.match(r"^(.*\S):(\d{1,5})$", raw)
             h, port = (mport.group(1), int(mport.group(2))) if mport else (raw, 22)
             S.engine = Engine(SSHConnector(h, user.value, pwd.value, port=port))
-        force = True if force_diag else None
-        S.device = await run.io_bound(S.engine.connect_and_probe, force)
+        S.device = await run.io_bound(S.engine.connect_and_probe)
         S.results.clear()
-        n.dismiss()
         dialog.close()
         _refresh_all()
         S.auth_servers = None
-        ui.timer(0.5, _auth_servers_click, once=True)   # auto-populate auth-server dropdowns
-        ui.notify(f"Connected: {S.device.model} {S.device.version}", type="positive")
+        elapsed = time.monotonic() - started
+        ui.notify(
+            f"Connected: {S.device.model} {S.device.version} in {elapsed:.1f}s",
+            type="positive",
+        )
     except Exception as exc:  # noqa: BLE001
-        n.dismiss()
         ui.notify(f"Connection failed: {exc}", type="negative", multi_line=True)
+    finally:
+        S.connecting = False
+        n.dismiss()
 
 
 async def run_ids(ids: List[str], label: str):
@@ -903,17 +913,16 @@ def open_connect_dialog():
         mock = ui.switch("Demo mode (simulated device)", value=False)
         vdom_demo = ui.switch("Simulate VDOMs (demo)", value=False)
         vdom_demo.bind_enabled_from(mock, "value")
-        diagcap = ui.switch("Account has diagnose (system-diagnostics)", value=False)
         host = ui.input("Host / IP", placeholder="host  or  host:port  (default 22)").classes("w-full").props("dark dense outlined")
         user = ui.input("Username (read-only)").classes("w-full").props("dark dense outlined")
         pwd = ui.input("Password", password=True).classes("w-full").props("dark dense outlined")
         for f in (host, user, pwd):
             f.bind_enabled_from(mock, "value", lambda v: not v)
         pwd.on("keydown.enter", lambda: do_connect(
-            host, user, pwd, mock.value, dialog, vdom_demo.value, diagcap.value))
+            host, user, pwd, mock.value, dialog, vdom_demo.value))
         with ui.row().classes("w-full justify-end gap-2"):
             ui.button("Connect", on_click=lambda: do_connect(
-                host, user, pwd, mock.value, dialog, vdom_demo.value, diagcap.value)) \
+                host, user, pwd, mock.value, dialog, vdom_demo.value)) \
                 .props("unelevated").style(f"background:{ACCENT}")
             ui.button("Cancel", on_click=dialog.close).props("flat")
     dialog.open()

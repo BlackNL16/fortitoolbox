@@ -83,8 +83,14 @@ class SSHConnector(Connector):
     def _run_paged(self, command: str, read_timeout: int = 90) -> str:
         conn = self._conn
         wait = r"--More--|" + _PROMPT
-        out = conn.send_command(command, expect_string=wait, read_timeout=read_timeout,
-                                strip_prompt=False, strip_command=False)
+        out = conn.send_command(
+            command,
+            expect_string=wait,
+            read_timeout=read_timeout,
+            strip_prompt=False,
+            strip_command=False,
+            cmd_verify=False,
+        )
         pages = [out]
         guard = 0
         while "--More--" in out[-40:]:
@@ -99,31 +105,62 @@ class SSHConnector(Connector):
             pages.append(out)
         return _strip_more("".join(pages)).strip("\n")
 
-    def run(self, command: str, scope=None, vdom=None) -> str:
+    def run(self, command: str, scope=None, vdom=None, read_timeout=None) -> str:
         if not self._conn:
             raise RuntimeError("not connected")
         if not (self._vdom_mode and scope in ("global", "vdom")):
-            return self._run_paged(command)
+            return self._run_paged(command, read_timeout=read_timeout or 90)
         conn = self._conn
         if scope == "global":
             enter = ["config global"]
         else:
             enter = ["config vdom", f"edit {vdom or self._mgmt_vdom or 'root'}"]
         for c in enter:
-            conn.send_command(c, expect_string=_NAV, read_timeout=30,
-                              strip_prompt=False, strip_command=False)
+            conn.send_command(
+                c,
+                expect_string=_NAV,
+                read_timeout=30,
+                strip_prompt=False,
+                strip_command=False,
+                cmd_verify=False,
+            )
         try:
-            return self._run_paged(command)
+            return self._run_paged(command, read_timeout=read_timeout or 90)
         finally:
             try:  # always leave the config context, even on read error
-                conn.send_command("end", expect_string=_NAV, read_timeout=30,
-                                  strip_prompt=False, strip_command=False)
+                conn.send_command(
+                    "end",
+                    expect_string=_NAV,
+                    read_timeout=30,
+                    strip_prompt=False,
+                    strip_command=False,
+                    cmd_verify=False,
+                )
             except Exception:
                 pass
 
     # -- identity / capability ---------------------------------------------
+    def probe_sysdiag(self) -> bool:
+        """Probe diagnose access with one bounded, read-only process sample."""
+        try:
+            # Timing mode does not depend on command echo or prompt matching and
+            # drains the response before normal checks reuse this SSH channel.
+            out = self._conn.send_command_timing(
+                "diagnose sys top 1 1",
+                last_read=0.5,
+                read_timeout=3,
+                strip_prompt=False,
+                strip_command=False,
+                cmd_verify=False,
+            )
+        except Exception:
+            return False
+        bad = ("permission" in out.lower() or "unknown action" in out.lower()
+               or "command parse error" in out.lower() or out.strip() == "")
+        return not bad
+
     def device_info(self) -> DeviceInfo:
-        raw = self.run("get system status")
+        raw = self.run("get system status", read_timeout=15)
         info = DeviceInfo()
         for line in raw.splitlines():
             low = line.lower().strip()
